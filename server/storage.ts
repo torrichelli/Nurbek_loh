@@ -23,8 +23,9 @@ export interface IStorage {
   }>;
   
   // Orders
-  getRecentOrders(limit?: number): Promise<(Order & { customer: Customer })[]>;
+  getRecentOrders(limit?: number, userId?: number, userRole?: string): Promise<(Order & { customer: Customer })[]>;
   getOrderById(id: number): Promise<Order | undefined>;
+  getUserOrders(userId: number): Promise<(Order & { customer: Customer })[]>;
   
   // Session store
   sessionStore: session.SessionStore;
@@ -115,13 +116,37 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getRecentOrders(limit = 10): Promise<(Order & { customer: Customer })[]> {
+  async getRecentOrders(limit = 10, userId?: number, userRole?: string): Promise<(Order & { customer: Customer })[]> {
+    let query = db
+      .select()
+      .from(orders)
+      .leftJoin(customers, eq(orders.customerId, customers.id));
+
+    // Ролевая фильтрация заказов
+    if (userRole === 'driver' && userId) {
+      // Драйвер видит только свои заказы
+      query = query.where(eq(orders.assignedDriverId, userId));
+    }
+    // Админ и менеджер видят все заказы (без дополнительной фильтрации)
+    // Склад видит все заказы (для операций со складом)
+
+    const result = await query
+      .orderBy(desc(orders.createdAt))
+      .limit(limit);
+
+    return result.map(row => ({
+      ...row.orders,
+      customer: row.customers!,
+    }));
+  }
+
+  async getUserOrders(userId: number): Promise<(Order & { customer: Customer })[]> {
     const result = await db
       .select()
       .from(orders)
       .leftJoin(customers, eq(orders.customerId, customers.id))
-      .orderBy(desc(orders.createdAt))
-      .limit(limit);
+      .where(eq(orders.assignedDriverId, userId))
+      .orderBy(desc(orders.createdAt));
 
     return result.map(row => ({
       ...row.orders,

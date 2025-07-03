@@ -3,40 +3,27 @@ import { useAuth } from "@/hooks/use-auth";
 import { 
   Truck, 
   Menu, 
-  X, 
-  Home, 
-  ShoppingCart, 
-  Warehouse, 
-  Route, 
-  Calculator,
+  X,
   Plus,
   User 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { t } from "@/lib/i18n";
-
-const navigation = [
-  { name: "dashboard", href: "#", icon: Home },
-  { name: "orders", href: "#", icon: ShoppingCart },
-  { name: "inventory", href: "#", icon: Warehouse },
-  { name: "routes", href: "#", icon: Route },
-  { name: "costCalculator", href: "#", icon: Calculator },
-];
-
-const bottomNavigation = [
-  { name: "dashboard", href: "#", icon: Home, current: true },
-  { name: "orders", href: "#", icon: ShoppingCart },
-  { name: "add", href: "#", icon: Plus },
-  { name: "routes", href: "#", icon: Route },
-  { name: "profile", href: "#", icon: User },
-];
+import { useRoleBasedNavigation, getRoleDisplayName } from "./role-based-navigation";
 
 export function MobileNav() {
   const { user, logoutMutation } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigation = useRoleBasedNavigation();
 
   if (!user) return null;
+
+  // Первые 4 пункта для нижней навигации
+  const bottomNavigation = navigation.slice(0, 4).map(item => ({
+    ...item,
+    current: item.name === "dashboard"
+  }));
 
   return (
     <>
@@ -85,7 +72,7 @@ export function MobileNav() {
             
             {/* Mobile Menu Items */}
             <div className="p-4 space-y-2">
-              {navigation.map((item) => {
+              {navigation.map((item: any) => {
                 const Icon = item.icon;
                 return (
                   <a
@@ -113,7 +100,7 @@ export function MobileNav() {
                   <p className="font-medium text-gray-900">
                     {user.firstName} {user.lastName}
                   </p>
-                  <p className="text-sm text-gray-500">{t(user.role as any)}</p>
+                  <p className="text-sm text-gray-500">{getRoleDisplayName(user.role)}</p>
                 </div>
               </div>
               <Button
@@ -133,8 +120,8 @@ export function MobileNav() {
 
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden">
-        <div className="grid grid-cols-5 gap-1">
-          {bottomNavigation.map((item) => {
+        <div className="grid grid-cols-4 gap-1">
+          {bottomNavigation.map((item: any) => {
             const Icon = item.icon;
             return (
               <a
@@ -148,9 +135,7 @@ export function MobileNav() {
               >
                 <Icon className="h-5 w-5 mb-1" />
                 <span className="text-xs">
-                  {item.name === "add" ? "Қосу" : 
-                   item.name === "profile" ? "Профиль" : 
-                   t(item.name as any)}
+                  {t(item.name as any)}
                 </span>
               </a>
             );

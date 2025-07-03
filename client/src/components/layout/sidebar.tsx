@@ -1,30 +1,15 @@
 import { useAuth } from "@/hooks/use-auth";
 import { 
   Truck, 
-  Home, 
-  ShoppingCart, 
-  Warehouse, 
-  Route, 
-  Calculator, 
-  FileText, 
-  BarChart3,
   LogOut 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
-
-const navigation = [
-  { name: "dashboard", href: "#", icon: Home, current: true },
-  { name: "orders", href: "#", icon: ShoppingCart, count: 12 },
-  { name: "inventory", href: "#", icon: Warehouse },
-  { name: "routes", href: "#", icon: Route },
-  { name: "costCalculator", href: "#", icon: Calculator },
-  { name: "invoices", href: "#", icon: FileText },
-  { name: "reports", href: "#", icon: BarChart3 },
-];
+import { useRoleBasedNavigation, getRoleDisplayName } from "./role-based-navigation";
 
 export function Sidebar() {
   const { user, logoutMutation } = useAuth();
+  const navigation = useRoleBasedNavigation();
 
   if (!user) return null;
 
@@ -41,16 +26,24 @@ export function Sidebar() {
           </div>
         </div>
 
+        {/* Role Badge */}
+        <div className="px-4 py-2 bg-blue-50 border-b border-gray-200">
+          <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">
+            {getRoleDisplayName(user.role)}
+          </div>
+        </div>
+
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-4 py-4">
-          {navigation.map((item) => {
+          {navigation.map((item: any, index: number) => {
             const Icon = item.icon;
+            const isCurrent = index === 0; // Dashboard is current for demo
             return (
               <a
                 key={item.name}
                 href={item.href}
                 className={`${
-                  item.current
+                  isCurrent
                     ? "bg-blue-50 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 } group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors`}
@@ -79,7 +72,7 @@ export function Sidebar() {
               <p className="text-sm font-medium text-gray-900">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-gray-500">{t(user.role as any)}</p>
+              <p className="text-xs text-gray-500">{getRoleDisplayName(user.role)}</p>
             </div>
             <Button
               variant="ghost"

@@ -6,9 +6,11 @@ import { RecentOrders } from "@/components/dashboard/recent-orders";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { SystemAlerts } from "@/components/dashboard/system-alerts";
 import { TaxCalculator } from "@/components/dashboard/tax-calculator";
+import { RoleAccessInfo } from "@/components/ui/role-access-info";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { Bell } from "lucide-react";
 import { t } from "@/lib/i18n";
+import { getRoleDisplayName } from "@/components/layout/role-based-navigation";
 
 export default function Dashboard() {
   const { user, logoutMutation } = useAuth();
@@ -50,7 +52,7 @@ export default function Dashboard() {
                   <p className="text-sm font-medium text-gray-900">
                     {user.firstName} {user.lastName}
                   </p>
-                  <p className="text-xs text-gray-500">{t(user.role as any)}</p>
+                  <p className="text-xs text-gray-500">{getRoleDisplayName(user.role)}</p>
                 </div>
                 <div className="w-8 h-8 bg-blue-900 rounded-full flex items-center justify-center">
                   <span className="text-white font-medium text-sm">
@@ -64,6 +66,9 @@ export default function Dashboard() {
 
         {/* Dashboard Content */}
         <main className="p-4 lg:p-6">
+          {/* Role Access Info */}
+          <RoleAccessInfo />
+          
           {/* Stats Cards */}
           <StatsCards />
 
